@@ -1,5 +1,6 @@
 package interfaz;
 
+import logic2.ImageOperator;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Label;
@@ -14,8 +15,6 @@ import javax.swing.JFileChooser;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.wb.swt.SWTResourceManager;
-
-import logic.ImageOperator;
 
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.DirectoryDialog;
@@ -60,19 +59,19 @@ public class MainWindow {
 		Label imagen1 = new Label(shlOperacionesConImagenes, SWT.BORDER);
 		imagen1.setBackground(SWTResourceManager.getColor(SWT.COLOR_GRAY));
 		imagen1.setForeground(SWTResourceManager.getColor(SWT.COLOR_WIDGET_FOREGROUND));
-		imagen1.setBounds(21, 31, 350, 300);
+		imagen1.setBounds(21, 31, 300, 300);
 		imagen1.setText("imagen1");
 		
-		Image imagen = new Image(display, "/Users/emilianocarrillo/Desktop/imgs/4a.png");
+		Image imagen = new Image(display, "/Users/emilianocarrillo/Desktop/imgs/2a.png");
     	imagen=resize(imagen,imagen1.getBounds().width,imagen1.getBounds().height);
     	imagen1.setImage(imagen);
 		
 		Label imagen2 = new Label(shlOperacionesConImagenes, SWT.BORDER);
 		imagen2.setBackground(SWTResourceManager.getColor(SWT.COLOR_GRAY));
 		imagen2.setText("imagen2");
-		imagen2.setBounds(456, 31, 350, 300);
+		imagen2.setBounds(456, 31, 300, 300);
 		
-		imagen = new Image(display, "/Users/emilianocarrillo/Desktop/imgs/5b.png");
+		imagen = new Image(display, "/Users/emilianocarrillo/Desktop/imgs/2b.png");
     	imagen=resize(imagen,imagen1.getBounds().width,imagen1.getBounds().height);
     	imagen2.setImage(imagen);
 		
@@ -122,7 +121,10 @@ public class MainWindow {
 			public void widgetSelected(SelectionEvent e) {
 				ImageOperator op = new ImageOperator(imagen1.getImage(), imagen2.getImage());
 				String currentOperator = combo.getItem(combo.getSelectionIndex());
-				op.operate(currentOperator);
+				
+				//op.operate(currentOperator);
+				op.operate(currentOperator, 100, 100);
+				
 				
 				// TODO: Cambiar en donde se muestra la img resultante
 				//imagen2.setImage(op.getResultingImage());
