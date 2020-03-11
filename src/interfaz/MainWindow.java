@@ -53,7 +53,7 @@ public class MainWindow {
 	}
 	public static void main(String[] args) {
 		
-		shlOperacionesConImagenes.setSize(832, 566);
+		shlOperacionesConImagenes.setSize(800, 800);
 		shlOperacionesConImagenes.setText("Operaciones con imagenes");
 		
 		Label imagen1 = new Label(shlOperacionesConImagenes, SWT.BORDER);
@@ -62,7 +62,7 @@ public class MainWindow {
 		imagen1.setBounds(21, 31, 300, 300);
 		imagen1.setText("imagen1");
 		
-		Image imagen = new Image(display, "/Users/emilianocarrillo/Desktop/imgs/2a.png");
+		Image imagen = new Image(display, "/Users/emilianocarrillo/Desktop/imgs/3a.png");
     	imagen=resize(imagen,imagen1.getBounds().width,imagen1.getBounds().height);
     	imagen1.setImage(imagen);
 		
@@ -71,9 +71,19 @@ public class MainWindow {
 		imagen2.setText("imagen2");
 		imagen2.setBounds(456, 31, 300, 300);
 		
-		imagen = new Image(display, "/Users/emilianocarrillo/Desktop/imgs/2b.png");
+		imagen = new Image(display, "/Users/emilianocarrillo/Desktop/imgs/3b.png");
     	imagen=resize(imagen,imagen1.getBounds().width,imagen1.getBounds().height);
     	imagen2.setImage(imagen);
+    	
+    	
+    	Label imagen3 = new Label(shlOperacionesConImagenes, SWT.BORDER);
+		imagen3.setBackground(SWTResourceManager.getColor(SWT.COLOR_GRAY));
+		imagen3.setText("imagen3");
+		imagen3.setBounds(250, 450, 300, 300);
+		
+		imagen = new Image(display, "/Users/emilianocarrillo/Desktop/imgs/default.png");
+    	imagen=resize(imagen,imagen1.getBounds().width,imagen1.getBounds().height);
+    	imagen3.setImage(imagen);
 		
 		Combo combo = new Combo(shlOperacionesConImagenes, SWT.NONE);
 		combo.setItems(new String[] {"+", "-", "*", "#"});
@@ -110,10 +120,10 @@ public class MainWindow {
 		
 		Button btnLoadImage2 = new Button(shlOperacionesConImagenes, SWT.NONE);
 		btnLoadImage2.setText("Cargar imagen 2");
-		btnLoadImage2.setBounds(589, 348, 124, 25);
+		btnLoadImage2.setBounds(545, 348, 124, 25);
 		
 		Button btnOperar = new Button(shlOperacionesConImagenes, SWT.NONE);
-		btnOperar.setBounds(374, 457, 75, 25);
+		btnOperar.setBounds(374, 400, 75, 25);
 		btnOperar.setText("Operar");
 		
 		btnOperar.addSelectionListener(new SelectionAdapter() {
@@ -122,12 +132,27 @@ public class MainWindow {
 				ImageOperator op = new ImageOperator(imagen1.getImage(), imagen2.getImage());
 				String currentOperator = combo.getItem(combo.getSelectionIndex());
 				
+				//*** logic 1 *****
 				//op.operate(currentOperator);
-				op.operate(currentOperator, 100, 100);
+				//***** logic 2 *****
+				/*
+				try {
+					op.operate(currentOperator, 10, 10);
+				} catch (InterruptedException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+				*/
+				//***** logic 3 *****
+				
+				try {
+					op.operate(currentOperator, 10, 10);
+				} catch (InterruptedException e1) {
+					e1.printStackTrace();
+				}
 				
 				
-				// TODO: Cambiar en donde se muestra la img resultante
-				//imagen2.setImage(op.getResultingImage());
+				imagen3.setImage(op.getResultingImage());
 			}
 		});
 

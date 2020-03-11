@@ -1,4 +1,4 @@
-package logic2;
+package logic3;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
@@ -25,8 +25,9 @@ class Chunk extends Thread{
 	ImageData chunkData1, chunkData2;
 	ImageData resultData;
 	String operator;
+	Lock lock;
 	
-	Chunk(int x, int y, ImageData chunkData1, ImageData chunkData2, String operator, ImageData resultData){
+	Chunk(int x, int y, ImageData chunkData1, ImageData chunkData2, String operator, ImageData resultData, Lock lock){
 		this.operator = operator;
 		cpos.x = x;
 		cpos.y = y;
@@ -35,6 +36,7 @@ class Chunk extends Thread{
 		this.chunkData1 = chunkData1;
 		this.chunkData2 = chunkData2;
 		this.resultData = resultData;
+		this.lock = lock;
 	}
 	
 	public int addPixels(int pa,int pb) {
@@ -60,6 +62,8 @@ class Chunk extends Thread{
 	}
 	
 	 public void run() { 
+		 while( true ){
+				lock.requestCR((int)Thread.currentThread().getId());
 	    System.out.println ("Thread " + Thread.currentThread().getId());
 	    
 	    int[] lineData1 = new int[width];
@@ -111,6 +115,7 @@ class Chunk extends Thread{
 	    ImageLoader imageLoader = new ImageLoader();
 	    imageLoader.data = new ImageData[] {resultData};
 	    imageLoader.save(("/Users/emilianocarrillo/Desktop/resultados/res" + Thread.currentThread().getId() +".jpg"), SWT.IMAGE_JPEG);
+		}
 	 } 
 	 
 	 ImageData getResultChunkData() {
@@ -125,6 +130,7 @@ public class ImageOperator {
 	int chunkRows;
 	int chunkCols;
 	int chunkCounter; //rows x cols
+	boolean[][] chunkMatrix;
 	
 	public ImageOperator(Image img1, Image img2) {
 		this.img1 = img1;
@@ -158,6 +164,14 @@ public class ImageOperator {
 	}
 	
 	public void operate(String operator, int rows, int cols) throws InterruptedException{
+		chunkMatrix = new boolean[rows][cols];
+		
+		for(int y = 0; y < rows; y++) {
+			for(int x = 0; x < cols; x++) {
+				chunkMatrix[y][x] = false;
+			}
+		}
+		
 		
 		chunkRows = Math.floorDiv(300, rows);
 		chunkCols = Math.floorDiv(300, cols);
@@ -173,6 +187,9 @@ public class ImageOperator {
 		// Chuncks data
 		ImageData chunkData1 = null;
 		ImageData chunkData2 = null;
+		
+		// LOCK
+		Lock lock = new Bakery(chunkCounter);
 	
 		// CHUNKS **************************************************
 		for(int y = 0; y < cols*chunkCols; y+=chunkCols) {
@@ -182,7 +199,7 @@ public class ImageOperator {
 				chunkData2 = getChunkData(dataPic2, x, y, chunkCols, chunkRows);
 			
 				
-				Chunk chunk = new Chunk(x, y, chunkData1, chunkData2, operator, resultData);
+				Chunk chunk = new Chunk(x, y, chunkData1, chunkData2, operator, resultData, lock);
 				chunk.start();
 				chunk.join();
 			}
