@@ -62,8 +62,7 @@ class Chunk extends Thread{
 	}
 	
 	 public void run() { 
-		 while( true ){
-				lock.requestCR((int)Thread.currentThread().getId());
+		
 	    System.out.println ("Thread " + Thread.currentThread().getId());
 	    
 	    int[] lineData1 = new int[width];
@@ -114,8 +113,10 @@ class Chunk extends Thread{
 	    
 	    ImageLoader imageLoader = new ImageLoader();
 	    imageLoader.data = new ImageData[] {resultData};
-	    imageLoader.save(("/Users/emilianocarrillo/Desktop/resultados/res" + Thread.currentThread().getId() +".jpg"), SWT.IMAGE_JPEG);
-		}
+	    String workingDir = System.getProperty("user.dir");
+	    
+	    imageLoader.save((workingDir+"/resultados/res" + Thread.currentThread().getId() +".jpg"), SWT.IMAGE_JPEG);
+		
 	 } 
 	 
 	 ImageData getResultChunkData() {
@@ -208,8 +209,8 @@ public class ImageOperator {
 		// Save Image
 	    ImageLoader imageLoader = new ImageLoader();
 	    imageLoader.data = new ImageData[] {resultData};
-	    imageLoader.save("/Users/emilianocarrillo/Desktop/res.jpg", SWT.IMAGE_JPEG);
-		
+	    String workingDir = System.getProperty("user.dir");
+	    imageLoader.save(workingDir+"/resultados/res.jpg", SWT.IMAGE_JPEG);
 		
 	}
 

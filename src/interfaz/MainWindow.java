@@ -1,6 +1,7 @@
 package interfaz;
 
-import logic2.ImageOperator;
+import logic3.ImageOperator;
+
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Label;
@@ -62,18 +63,18 @@ public class MainWindow {
 		imagen1.setBounds(21, 31, 300, 300);
 		imagen1.setText("imagen1");
 		
-		Image imagen = new Image(display, "/Users/emilianocarrillo/Desktop/imgs/3a.png");
+		/*Image imagen = new Image(display, "/Users/emilianocarrillo/Desktop/imgs/3a.png");
     	imagen=resize(imagen,imagen1.getBounds().width,imagen1.getBounds().height);
-    	imagen1.setImage(imagen);
+    	imagen1.setImage(imagen);*/
 		
 		Label imagen2 = new Label(shlOperacionesConImagenes, SWT.BORDER);
 		imagen2.setBackground(SWTResourceManager.getColor(SWT.COLOR_GRAY));
 		imagen2.setText("imagen2");
 		imagen2.setBounds(456, 31, 300, 300);
 		
-		imagen = new Image(display, "/Users/emilianocarrillo/Desktop/imgs/3b.png");
+		/*imagen = new Image(display, "/Users/emilianocarrillo/Desktop/imgs/3b.png");
     	imagen=resize(imagen,imagen1.getBounds().width,imagen1.getBounds().height);
-    	imagen2.setImage(imagen);
+    	imagen2.setImage(imagen);*/
     	
     	
     	Label imagen3 = new Label(shlOperacionesConImagenes, SWT.BORDER);
@@ -81,9 +82,9 @@ public class MainWindow {
 		imagen3.setText("imagen3");
 		imagen3.setBounds(250, 450, 300, 300);
 		
-		imagen = new Image(display, "/Users/emilianocarrillo/Desktop/imgs/default.png");
+		/*imagen = new Image(display, "/Users/emilianocarrillo/Desktop/imgs/default.png");
     	imagen=resize(imagen,imagen1.getBounds().width,imagen1.getBounds().height);
-    	imagen3.setImage(imagen);
+    	imagen3.setImage(imagen);*/
 		
 		Combo combo = new Combo(shlOperacionesConImagenes, SWT.NONE);
 		combo.setItems(new String[] {"+", "-", "*", "#"});
@@ -119,6 +120,29 @@ public class MainWindow {
 		btnLoadImage1.setText("Cargar imagen 1");
 		
 		Button btnLoadImage2 = new Button(shlOperacionesConImagenes, SWT.NONE);
+		btnLoadImage2.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				JFileChooser selector=new JFileChooser();
+                int estado=selector.showOpenDialog(null);
+                File archivoelegido=selector.getSelectedFile();
+                String ruta=archivoelegido.getPath();
+               
+                if(archivoelegido.exists())
+                     System.out.println("bien imagen 2");
+                else
+                {
+                	showInfoDialog("Advertencia","Archivo no existe");
+                }
+                if(estado==JFileChooser.APPROVE_OPTION);
+                {
+                	
+                	Image imagen = new Image(display,ruta);
+                	imagen=resize(imagen,imagen2.getBounds().width,imagen2.getBounds().height);
+                	imagen2.setImage(imagen);
+                }
+			}
+		});
 		btnLoadImage2.setText("Cargar imagen 2");
 		btnLoadImage2.setBounds(545, 348, 124, 25);
 		
@@ -156,6 +180,7 @@ public class MainWindow {
 			}
 		});
 
+		
 		shlOperacionesConImagenes.open();
 		shlOperacionesConImagenes.layout();
 		while (!shlOperacionesConImagenes.isDisposed()) {
