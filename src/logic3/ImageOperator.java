@@ -26,8 +26,9 @@ class Chunk extends Thread{
 	ImageData resultData;
 	String operator;
 	Lock lock;
+	double coeficient;
 	
-	Chunk(int x, int y, ImageData chunkData1, ImageData chunkData2, String operator, ImageData resultData, Lock lock){
+	Chunk(int x, int y, ImageData chunkData1, ImageData chunkData2, String operator, ImageData resultData, Lock lock,double coef){
 		this.operator = operator;
 		cpos.x = x;
 		cpos.y = y;
@@ -37,6 +38,7 @@ class Chunk extends Thread{
 		this.chunkData2 = chunkData2;
 		this.resultData = resultData;
 		this.lock = lock;
+		this.coeficient=coef;
 	}
 	
 	public int addPixels(int pa,int pb) {
@@ -54,7 +56,7 @@ class Chunk extends Thread{
 	}
 	
 	public int combinePixels(int pa,int pb) {
-		double a = 0.8;
+		double a = coeficient;
 		double b = 1 - a;
 		double max = a*b*255*255;
 		int res = (int)Math.floor((a*pa*b*pb)*255/max);
@@ -132,7 +134,8 @@ public class ImageOperator {
 	int chunkCols;
 	int chunkCounter; //rows x cols
 	boolean[][] chunkMatrix;
-	
+	double coeficient;
+
 	public ImageOperator(Image img1, Image img2) {
 		this.img1 = img1;
 		this.img2 = img2;
@@ -164,8 +167,9 @@ public class ImageOperator {
 		}
 	}
 	
-	public void operate(String operator, int rows, int cols) throws InterruptedException{
+	public void operate(String operator, int rows, int cols, double coef) throws InterruptedException{
 		chunkMatrix = new boolean[rows][cols];
+		coeficient=coef;
 		
 		for(int y = 0; y < rows; y++) {
 			for(int x = 0; x < cols; x++) {
@@ -200,7 +204,7 @@ public class ImageOperator {
 				chunkData2 = getChunkData(dataPic2, x, y, chunkCols, chunkRows);
 			
 				
-				Chunk chunk = new Chunk(x, y, chunkData1, chunkData2, operator, resultData, lock);
+				Chunk chunk = new Chunk(x, y, chunkData1, chunkData2, operator, resultData, lock,coeficient);
 				chunk.start();
 				chunk.join();
 			}
