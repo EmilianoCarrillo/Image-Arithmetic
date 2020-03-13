@@ -40,6 +40,7 @@ public class MainWindow {
 	static Shell shlOperacionesConImagenes = new Shell();
 	private static Text text;
 	private static Text text_1;
+	public static Label imagen3;
 	private static  Image resize(Image image, int width, int height) 
 	{
 		Image scaled = new Image(Display.getDefault(), width, height);
@@ -95,7 +96,7 @@ public class MainWindow {
     	imagen2.setImage(imagen);*/
     	
     	
-    	Label imagen3 = new Label(shlOperacionesConImagenes, SWT.BORDER);
+    	imagen3 = new Label(shlOperacionesConImagenes, SWT.BORDER);
 		imagen3.setBackground(SWTResourceManager.getColor(SWT.COLOR_GRAY));
 		imagen3.setText("imagen3");
 		imagen3.setBounds(250, 450, 300, 300);
