@@ -82,18 +82,18 @@ public class MainWindow {
 		imagen1.setBounds(21, 31, 300, 300);
 		imagen1.setText("imagen1");
 		
-		/*Image imagen = new Image(display, "/Users/emilianocarrillo/Desktop/imgs/3a.png");
+		Image imagen = new Image(display, "/Users/emilianocarrillo/Desktop/img/1b.jpg");
     	imagen=resize(imagen,imagen1.getBounds().width,imagen1.getBounds().height);
-    	imagen1.setImage(imagen);*/
+    	imagen1.setImage(imagen);
 		
 		Label imagen2 = new Label(shlOperacionesConImagenes, SWT.BORDER);
 		imagen2.setBackground(SWTResourceManager.getColor(SWT.COLOR_GRAY));
 		imagen2.setText("imagen2");
 		imagen2.setBounds(456, 31, 300, 300);
 		
-		/*imagen = new Image(display, "/Users/emilianocarrillo/Desktop/imgs/3b.png");
+		imagen = new Image(display, "/Users/emilianocarrillo/Desktop/img/1a.jpg");
     	imagen=resize(imagen,imagen1.getBounds().width,imagen1.getBounds().height);
-    	imagen2.setImage(imagen);*/
+    	imagen2.setImage(imagen);
     	
     	
     	imagen3 = new Label(shlOperacionesConImagenes, SWT.BORDER);
