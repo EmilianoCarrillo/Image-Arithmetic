@@ -1,5 +1,5 @@
 package logic3;
-
+import interfaz.MainWindow;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.ImageData;
@@ -20,14 +20,19 @@ interface Operator<T, V>{
 
 class Chunk extends Thread{
 	public Coordenada cpos = new Coordenada();
+	int myId;
 	public int height;
 	public int width;
 	ImageData chunkData1, chunkData2;
 	ImageData resultData;
 	String operator;
 	Lock lock;
+	double coeficient;
+	public static int chunkCounter;
+	public static boolean[][] chunkMatrix;
+	public static int rows=0,cols=0;
 	
-	Chunk(int x, int y, ImageData chunkData1, ImageData chunkData2, String operator, ImageData resultData, Lock lock){
+	Chunk(int id,int x, int y, ImageData chunkData1, ImageData chunkData2, String operator, ImageData resultData, Lock lock,double coef){
 		this.operator = operator;
 		cpos.x = x;
 		cpos.y = y;
@@ -37,6 +42,8 @@ class Chunk extends Thread{
 		this.chunkData2 = chunkData2;
 		this.resultData = resultData;
 		this.lock = lock;
+		this.coeficient=coef;
+		this.myId=id;
 	}
 	
 	public int addPixels(int pa,int pb) {
@@ -54,19 +61,39 @@ class Chunk extends Thread{
 	}
 	
 	public int combinePixels(int pa,int pb) {
-		double a = 0.8;
+		double a = coeficient;
 		double b = 1 - a;
 		double max = a*b*255*255;
 		int res = (int)Math.floor((a*pa*b*pb)*255/max);
 		return res;	
 	}
-	
-	 public void run() { 
-		 while( true ){
-				lock.requestCR((int)Thread.currentThread().getId());
-	    System.out.println ("Thread " + Thread.currentThread().getId());
-	    
-	    int[] lineData1 = new int[width];
+	public void nonCriticalRegion() throws InterruptedException
+	{
+		System.out.println(myId + " no esta en la CR" );
+		ImageLoader imageLoader = new ImageLoader();
+		imageLoader.data = new ImageData[] {resultData};
+		String workingDir = System.getProperty("user.dir");
+		imageLoader.save((workingDir+"/resultados/res" + Thread.currentThread().getId() +".jpg"), SWT.IMAGE_JPEG);
+		Image label=MainWindow.imagen3.getImage();
+		ImageData dataLabel=label.getImageData();
+		ImageData chunkDataLabel = new ImageData(width, height, dataLabel.depth, dataLabel.palette);
+		
+		for (int y = 0; y < height; y++) {
+	    	for (int x = 0; x<width; x++){
+	    		chunkDataLabel.setPixel(cpos.x+x, cpos.y+y, resultData.getPixel(x, y));
+	        }
+	    }
+		Display display = Display.getDefault();
+		Image resultingImage = new Image(display, chunkDataLabel);
+		MainWindow.imagen3.setImage(resultingImage);
+		Thread.sleep(1000);
+	}
+	public void CriticalRegion() throws InterruptedException
+	{
+		System.out.println(myId + " está en la CR . . ." );
+		// Aquí va el código que trabaja con el recurso compartido
+		
+		int[] lineData1 = new int[width];
 		int[] lineData2 = new int[width];
 		
 		
@@ -112,9 +139,52 @@ class Chunk extends Thread{
 	        }
 	    }
 	    
-	    ImageLoader imageLoader = new ImageLoader();
-	    imageLoader.data = new ImageData[] {resultData};
-	    imageLoader.save(("/Users/emilianocarrillo/Desktop/resultados/res" + Thread.currentThread().getId() +".jpg"), SWT.IMAGE_JPEG);
+		//Thread.sleep(1000);
+	}
+	 public void run() 
+	 { 
+		while(true) 
+		{
+			if(chunkCounter==0)
+				return;
+			lock.requestCR(myId);
+			int r=-1;
+			int c=-1;
+			try {
+				
+				for(int i=0;i<rows;i++)
+				{
+					for(int j=0;j<cols;j++)
+					{
+						if(!chunkMatrix[i][j])
+						{
+							r=i;
+							c=j;
+							break;
+						}
+					}
+					if(r!=-1 || c!=-1)
+						break;
+				}
+				if(r==-1 || c==-1)
+					return;
+				chunkMatrix[r][c]=true;
+				chunkCounter--;
+				CriticalRegion();
+				
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
+			lock.releaseCR(myId);
+			
+			try {
+				nonCriticalRegion();
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 	 } 
 	 
@@ -130,14 +200,16 @@ public class ImageOperator {
 	int chunkRows;
 	int chunkCols;
 	int chunkCounter; //rows x cols
-	boolean[][] chunkMatrix;
 	
+	double coeficient;
+
 	public ImageOperator(Image img1, Image img2) {
 		this.img1 = img1;
 		this.img2 = img2;
 	}
 	
 	ImageData getChunkData(ImageData wholeData, int xInicio, int yInicio, int width, int height) {
+		
 		ImageData chunkData = new ImageData(width, height, wholeData.depth, wholeData.palette);
 		
 		int i = 0;
@@ -145,6 +217,7 @@ public class ImageOperator {
 		
 		for(int y = yInicio; y < height + yInicio; y++) {
 			for(int x = xInicio; x < width + xInicio; x++) {
+				
 				chunkData.setPixel(i, j, wholeData.getPixel(x, y));
 				i++;
 			}
@@ -163,53 +236,68 @@ public class ImageOperator {
 		}
 	}
 	
-	public void operate(String operator, int rows, int cols) throws InterruptedException{
-		chunkMatrix = new boolean[rows][cols];
+	public void operate(String operator, int rows, int cols, double coef) throws InterruptedException{
+		Chunk.chunkMatrix = new boolean[rows][cols];
+		coeficient=coef;
+		int TOTAL_WIDTH=300;
+		int TOTAL_HEIGHT=300;
 		
 		for(int y = 0; y < rows; y++) {
 			for(int x = 0; x < cols; x++) {
-				chunkMatrix[y][x] = false;
+				Chunk.chunkMatrix[y][x] = false;
 			}
 		}
 		
 		
-		chunkRows = Math.floorDiv(300, rows);
-		chunkCols = Math.floorDiv(300, cols);
+		chunkRows = Math.floorDiv(TOTAL_HEIGHT, rows);
+		chunkCols = Math.floorDiv(TOTAL_WIDTH, cols);
 		chunkCounter = rows*cols;
+		Chunk.chunkCounter=this.chunkCounter;
+		Chunk.rows=rows;
+		Chunk.cols=cols;
 		
 		//Input Images
 		ImageData dataPic1 = img1.getImageData();
 		ImageData dataPic2 = img2.getImageData();
 		
 		// Resulting Image
-		resultData = new ImageData(300, 300, dataPic1.depth, dataPic1.palette);
+		resultData = new ImageData(TOTAL_WIDTH, TOTAL_HEIGHT, dataPic1.depth, dataPic1.palette);
 		
-		// Chuncks data
+		// Chunks data
 		ImageData chunkData1 = null;
 		ImageData chunkData2 = null;
 		
 		// LOCK
 		Lock lock = new Bakery(chunkCounter);
-	
+		int contThreads=0;
 		// CHUNKS **************************************************
-		for(int y = 0; y < cols*chunkCols; y+=chunkCols) {
-			for(int x = 0; x < rows*chunkRows; x+=chunkRows) {
+		for(int y = 0; y < rows*chunkRows; y+=chunkRows) {
+			for(int x = 0; x < cols*chunkCols; x+=chunkCols) {
 				
-				chunkData1 = getChunkData(dataPic1, x, y, chunkCols, chunkRows);
-				chunkData2 = getChunkData(dataPic2, x, y, chunkCols, chunkRows);
+				int chunkRowstmp=chunkRows;
+				int chunkColstmp=chunkCols;
+				if((y+1)/chunkRows==rows-1) 
+					chunkRowstmp=TOTAL_HEIGHT-y;
+				
+				if((x+1)/chunkCols==cols-1) 
+					chunkColstmp=TOTAL_WIDTH-x;
 			
+				chunkData1 = getChunkData(dataPic1, x, y, chunkColstmp, chunkRowstmp);
+				chunkData2 = getChunkData(dataPic2, x, y, chunkColstmp, chunkRowstmp);
 				
-				Chunk chunk = new Chunk(x, y, chunkData1, chunkData2, operator, resultData, lock);
+				Chunk chunk = new Chunk(contThreads,x, y, chunkData1, chunkData2, operator, resultData, lock,coeficient);
+				contThreads++;
 				chunk.start();
-				chunk.join();
+				
 			}
 		}
+	
 		
 		// Save Image
 	    ImageLoader imageLoader = new ImageLoader();
 	    imageLoader.data = new ImageData[] {resultData};
-	    imageLoader.save("/Users/emilianocarrillo/Desktop/res.jpg", SWT.IMAGE_JPEG);
-		
+	    String workingDir = System.getProperty("user.dir");
+	    imageLoader.save(workingDir+"/resultados/res.jpg", SWT.IMAGE_JPEG);
 		
 	}
 
@@ -218,7 +306,6 @@ public class ImageOperator {
 		Image resultingImage = new Image(display, resultData);
 		return resultingImage;
 	}
-	
 	
 }
 
